@@ -82,7 +82,7 @@ class GrokImagineVideoClient:
         payload = {
             "model": "grok-imagine-video",
             "prompt": prompt,
-            "image_url": image_url,
+            "image": {"url": image_url},
             "duration": duration
         }
 
@@ -171,7 +171,7 @@ class GrokImagineVideoClient:
         payload = {
             "model": "grok-imagine-image",
             "prompt": prompt,
-            "image_url": image_url,
+            "image": {"url": image_url, "type": "image_url"},
             "n": n,
             "response_format": response_format
         }

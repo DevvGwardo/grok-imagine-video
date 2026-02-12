@@ -74,7 +74,7 @@ Edit an existing image via natural language instruction.
 |-------|------|----------|-------------|
 | `model` | string | Yes | Must be `"grok-imagine-image"` |
 | `prompt` | string | Yes | Natural language edit instruction |
-| `image_url` | string | Yes | Public URL or base64 data URI (`data:image/jpeg;base64,...`) |
+| `image` | object | Yes | `{"url": "...", "type": "image_url"}` with a public URL or base64 data URI |
 | `n` | integer | No | Number of variations (1-10). Default: 1 |
 | `response_format` | string | No | `"url"` or `"b64_json"`. Default: `"url"` |
 
@@ -83,7 +83,7 @@ Edit an existing image via natural language instruction.
 {
   "model": "grok-imagine-image",
   "prompt": "Change the landmarks to be New York City landmarks",
-  "image_url": "https://example.com/london.jpg"
+  "image": {"url": "https://example.com/london.jpg", "type": "image_url"}
 }
 ```
 
@@ -106,12 +106,12 @@ Single endpoint for all video generation modes: text-to-video, image-to-video, a
 | `duration` | integer | No | Duration in seconds (1-15). Default: 10. Ignored for video editing. |
 | `aspect_ratio` | string | No | `"16:9"`, `"9:16"`, `"1:1"`, `"4:3"`, `"3:4"`, `"3:2"`, `"2:3"`. Default: `"16:9"` for text-to-video; editing uses source dimensions. |
 | `resolution` | string | No | `"480p"` or `"720p"`. Default: `"480p"`. Editing capped at 720p. |
-| `image_url` | string | No | For image-to-video: public URL or base64 data URI (`data:image/jpeg;base64,...`) |
+| `image` | object | No | For image-to-video: `{"url": "..."}` with a public URL or base64 data URI |
 | `video_url` | string | No | For video editing: URL of the source video |
 
 **Mode selection:**
-- Text-to-video: provide `prompt` only (no `image_url` or `video_url`)
-- Image-to-video: provide `prompt` + `image_url`
+- Text-to-video: provide `prompt` only (no `image` or `video_url`)
+- Image-to-video: provide `prompt` + `image`
 - Video editing: provide `prompt` + `video_url`
 
 **Example — Text-to-video:**
@@ -130,7 +130,7 @@ Single endpoint for all video generation modes: text-to-video, image-to-video, a
 {
   "model": "grok-imagine-video",
   "prompt": "Make the clouds move gently",
-  "image_url": "https://example.com/image.jpg",
+  "image": {"url": "https://example.com/image.jpg"},
   "duration": 10
 }
 ```
