@@ -1,6 +1,6 @@
 ---
 name: grok-imagine-video
-description: xAI Grok Imagine Video API integration for text-to-video, image-to-video, and video editing via natural language. Use when you need to generate videos from text prompts, animate static images into videos, or edit existing videos with natural language instructions. Supports conversational video generation across messaging platforms with async polling, progress updates, and automatic delivery.
+description: xAI Grok Imagine API integration for image generation, text-to-video, image-to-video, and editing via natural language. Use when you need to generate images or videos from text prompts, edit existing images, animate static images into videos, or edit existing videos with natural language instructions. Supports conversational generation across messaging platforms with async polling, progress updates, and automatic delivery.
 metadata: {"openclaw": {"requires": {"env": ["XAI_API_KEY"]}, "primaryEnv": "XAI_API_KEY"}}
 ---
 
@@ -22,15 +22,56 @@ export XAI_API_KEY="your-api-key-here"
 
 ## Capabilities
 
+- **Text-to-image**: Generate images from text descriptions (up to 10 variations)
+- **Image editing**: Modify images using natural language
 - **Text-to-video**: Create videos from text descriptions
 - **Image-to-video**: Animate static images into motion
 - **Video editing**: Modify videos using natural language
-- **Async generation**: Handles long-running jobs with polling
-- **Auto-delivery**: Downloads and delivers videos via chat
+- **Async generation**: Handles long-running video jobs with polling
+- **Auto-delivery**: Downloads and delivers images/videos via chat
 
 ## Workflow
 
-### 1. Text-to-Video
+### 1. Image Generation
+
+User says: "Create an image of a cyberpunk cityscape at night"
+
+```bash
+python3 - << 'EOF'
+import os
+import sys
+sys.path.insert(0, 'scripts')
+from grok_video_api import GrokImagineVideoClient
+
+client = GrokImagineVideoClient(os.getenv("XAI_API_KEY"))
+result = client.generate_image("A cyberpunk cityscape at night, neon lights reflecting on wet streets")
+print(f"Image URL: {result}")
+EOF
+```
+
+Images are generated instantly (no polling needed). Download promptly as URLs are temporary.
+
+### 1b. Image Editing
+
+User says: "Edit this image — make it look like a watercolor"
+
+```bash
+python3 - << 'EOF'
+import os
+import sys
+sys.path.insert(0, 'scripts')
+from grok_video_api import GrokImagineVideoClient
+
+client = GrokImagineVideoClient(os.getenv("XAI_API_KEY"))
+result = client.edit_image(
+    image_url="https://example.com/photo.jpg",
+    prompt="Make it look like a watercolor painting"
+)
+print(f"Edited image: {result}")
+EOF
+```
+
+### 2. Text-to-Video
 
 User says: "Generate a video of a sunset over the ocean"
 
@@ -48,7 +89,7 @@ print(f"Job started: {result['job_id']}")
 EOF
 ```
 
-### 2. Wait for Completion
+### 3. Wait for Video Completion
 
 Video generation takes 1-3 minutes. Poll with progress:
 
@@ -69,7 +110,7 @@ print(f"Video ready: {final['video']['url']}")
 EOF
 ```
 
-### 3. Download and Deliver
+### 4. Download and Deliver
 
 Download the completed video to the workspace:
 
@@ -138,25 +179,33 @@ Always wrap API calls in try/except and provide user-friendly messages.
 
 ## Best Practices
 
-**Prompt engineering:**
+**Prompt engineering (images):**
+- Be descriptive: "A collage of London landmarks in a stenciled street-art style"
+- Specify style: "Watercolor painting of a mountain lake at dawn"
+- Use multiple variations (`n=4`) to explore interpretations
+
+**Prompt engineering (videos):**
 - Be specific: "A golden retriever running through a sunny meadow"
 - Include camera movement: "Slow pan from left to right"
 - Specify lighting: "Warm golden hour lighting"
 
 **Performance:**
-- Use 480p for faster generation, 720p for higher quality
+- Images generate instantly — no polling needed
+- Use 480p for faster video generation, 720p for higher quality
 - Keep videos under 10 seconds unless essential
 - Start with text-to-video, then edit if needed
 
 **User experience:**
-- Send progress updates: "Generating video... 45% complete"
-- Estimate time: "This takes about 2-3 minutes"
-- Confirm delivery: "Video ready! Here's your sunset video."
+- Images: deliver immediately after generation
+- Videos: send progress updates: "Generating video... 45% complete"
+- Estimate time for videos: "This takes about 2-3 minutes"
+- Confirm delivery: "Here's your image/video!"
 
 ## Limits
 
-- Duration: 1-15 seconds
-- Resolution: 480p (default) or 720p
+- Images per request: 1-10
+- Video duration: 1-15 seconds
+- Video resolution: 480p (default) or 720p
 - Rate limit: 60 requests/minute
 - Max concurrent jobs: 15
 

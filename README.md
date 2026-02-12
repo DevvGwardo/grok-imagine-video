@@ -1,13 +1,15 @@
-# Grok Imagine Video
+# Grok Imagine Video & Image
 
-A Python client and [OpenClaw](https://docs.openclaw.ai) skill for generating, animating, and editing videos using [xAI's Grok Imagine Video API](https://docs.x.ai/developers/model-capabilities/video/generation).
+A Python client and [OpenClaw](https://docs.openclaw.ai) skill for generating images and videos using [xAI's Grok Imagine APIs](https://docs.x.ai/developers/model-capabilities).
 
 ## Features
 
+- **Text-to-Image** — Generate images from natural language descriptions (up to 10 variations)
+- **Image Editing** — Edit existing images with natural language instructions
 - **Text-to-Video** — Generate video clips from natural language descriptions
 - **Image-to-Video** — Animate static images into motion video
 - **Video Editing** — Edit existing videos with natural language instructions (filters, speed, color grading, effects)
-- **Async Polling** — Non-blocking job management with progress callbacks
+- **Async Polling** — Non-blocking video job management with progress callbacks
 - **OpenClaw Integration** — Works as a drop-in skill for Discord, Telegram, and WhatsApp bots
 
 ## Quick Start
@@ -29,6 +31,10 @@ from scripts.grok_video_api import GrokImagineVideoClient
 
 client = GrokImagineVideoClient(api_key="your-key")
 
+# Generate an image from text
+result = client.generate_image("A cyberpunk cityscape at night, neon lights reflecting on wet streets")
+print(result)  # Contains image URL or base64 data
+
 # Generate a video from text
 result = client.text_to_video("A golden retriever running through a sunny meadow", duration=10)
 
@@ -40,6 +46,44 @@ client.download_video(final, "output.mp4")
 ```
 
 ## Usage
+
+### Image Generation
+
+```python
+# Generate a single image
+result = client.generate_image(
+    prompt="A collage of London landmarks in a stenciled street-art style",
+    aspect_ratio="16:9"
+)
+
+# Generate multiple variations
+result = client.generate_image(
+    prompt="A futuristic city skyline at night",
+    n=4,                      # Up to 10 variations
+    aspect_ratio="16:9"
+)
+
+# Get base64 output instead of a URL
+result = client.generate_image(
+    prompt="A watercolor painting of a mountain lake",
+    response_format="b64_json"
+)
+```
+
+### Image Editing
+
+```python
+result = client.edit_image(
+    image_url="https://example.com/photo.jpg",
+    prompt="Change the sky to a dramatic sunset"
+)
+
+# Edit with a base64 source image
+result = client.edit_image(
+    image_url=f"data:image/jpeg;base64,{image_data}",
+    prompt="Make it look like a watercolor painting"
+)
+```
 
 ### Text-to-Video
 
@@ -107,6 +151,8 @@ openclaw gateway restart
 
 Then tell your bot things like:
 
+> "Generate an image of a cyberpunk cityscape at night"
+> "Edit this image — make it look like a watercolor painting"
 > "Generate a video of a sunset over the ocean"
 > "Animate this image — make the clouds move"
 > "Edit this video — add a warm sunset filter"
@@ -115,16 +161,23 @@ Then tell your bot things like:
 
 | Constraint | Value |
 |---|---|
+| Images per request | 1–10 |
 | Video duration | 1–15 seconds |
-| Editing input limit | 8.7 seconds |
-| Resolution | 480p or 720p |
+| Video editing input limit | 8.7 seconds |
+| Video resolution | 480p or 720p |
 | Rate limit | 60 requests/min |
 | Concurrent jobs | 15 per account |
 
-Video URLs are **temporary** — download promptly after generation.
+Image and video URLs are **temporary** — download promptly after generation.
 
 ## Prompt Tips
 
+### Images
+- Be descriptive: *"A collage of London landmarks in a stenciled street-art style"*
+- Specify style: *"Watercolor painting of a mountain lake at dawn"*
+- Use multiple variations (`n=4`) to explore different interpretations
+
+### Videos
 - Be specific: *"A golden retriever running through a sunny meadow"*
 - Include camera direction: *"Slow pan from left to right over a mountain range"*
 - Specify lighting: *"Warm golden hour lighting with long shadows"*

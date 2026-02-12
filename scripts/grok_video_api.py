@@ -116,6 +116,92 @@ class GrokImagineVideoClient:
         response.raise_for_status()
         return response.json()
 
+    def generate_image(
+        self,
+        prompt: str,
+        n: int = 1,
+        aspect_ratio: str = "1:1",
+        response_format: str = "url"
+    ) -> Dict[str, Any]:
+        """
+        Generate images from a text prompt.
+
+        Args:
+            prompt: Text description of the image to generate
+            n: Number of image variations (1-10)
+            aspect_ratio: Aspect ratio (1:1, 16:9, 9:16, 4:3, 3:4, 3:2, 2:3, etc.)
+            response_format: "url" for temporary URL or "b64_json" for base64 data
+
+        Returns:
+            API response with image URL(s) or base64 data
+        """
+        url = f"{self.base_url}/images/generations"
+        payload = {
+            "model": "grok-imagine-image",
+            "prompt": prompt,
+            "n": n,
+            "aspect_ratio": aspect_ratio,
+            "response_format": response_format
+        }
+
+        response = requests.post(url, headers=self.headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+
+    def edit_image(
+        self,
+        image_url: str,
+        prompt: str,
+        n: int = 1,
+        response_format: str = "url"
+    ) -> Dict[str, Any]:
+        """
+        Edit an existing image via natural language instruction.
+
+        Args:
+            image_url: Public URL or base64 data URI of the source image
+            prompt: Natural language instruction for the edit
+            n: Number of variations (1-10)
+            response_format: "url" for temporary URL or "b64_json" for base64 data
+
+        Returns:
+            API response with edited image URL(s) or base64 data
+        """
+        url = f"{self.base_url}/images/edits"
+        payload = {
+            "model": "grok-imagine-image",
+            "prompt": prompt,
+            "image_url": image_url,
+            "n": n,
+            "response_format": response_format
+        }
+
+        response = requests.post(url, headers=self.headers, json=payload)
+        response.raise_for_status()
+        return response.json()
+
+    def download_image(self, image_url: str, output_path: str) -> str:
+        """
+        Download a generated image file.
+
+        Args:
+            image_url: URL of the generated image
+            output_path: Local path to save the image
+
+        Returns:
+            Path to the downloaded file
+        """
+        response = requests.get(image_url, stream=True)
+        response.raise_for_status()
+
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+        with open(output_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        return output_path
+
     def get_job_status(self, request_id: str) -> Dict[str, Any]:
         """
         Check the status of a video generation request.

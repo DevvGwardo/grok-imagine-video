@@ -1,6 +1,8 @@
-# xAI Grok Imagine Video API Reference
+# xAI Grok Imagine API Reference
 
-Based on: https://docs.x.ai/developers/model-capabilities/video/generation
+Based on:
+- https://docs.x.ai/developers/model-capabilities/images/generation
+- https://docs.x.ai/developers/model-capabilities/video/generation
 
 ## Base URL
 ```
@@ -16,6 +18,78 @@ Authorization: Bearer YOUR_XAI_API_KEY
 Get your API key from: https://console.x.ai/
 
 ## Endpoints
+
+---
+
+## Image Generation
+
+### Generate Images
+
+**POST** `/images/generations`
+
+Generate one or more images from a text prompt.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Must be `"grok-imagine-image"` |
+| `prompt` | string | Yes | Text description of desired image |
+| `n` | integer | No | Number of variations (1-10). Default: 1 |
+| `aspect_ratio` | string | No | `"1:1"`, `"16:9"`, `"9:16"`, `"4:3"`, `"3:4"`, `"3:2"`, `"2:3"`, `"2:1"`, `"1:2"`, `"19.5:9"`, `"9:19.5"`, `"20:9"`, `"9:20"`, or `"auto"`. Default: `"1:1"` |
+| `response_format` | string | No | `"url"` for temporary URL or `"b64_json"` for base64 data. Default: `"url"` |
+
+**Example:**
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "A collage of London landmarks in a stenciled street-art style",
+  "n": 1,
+  "aspect_ratio": "16:9"
+}
+```
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "url": "https://...",
+      "respect_moderation": true
+    }
+  ],
+  "model": "grok-imagine-image"
+}
+```
+
+### Edit Images
+
+**POST** `/images/edits`
+
+Edit an existing image via natural language instruction.
+
+**Request Body:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `model` | string | Yes | Must be `"grok-imagine-image"` |
+| `prompt` | string | Yes | Natural language edit instruction |
+| `image_url` | string | Yes | Public URL or base64 data URI (`data:image/jpeg;base64,...`) |
+| `n` | integer | No | Number of variations (1-10). Default: 1 |
+| `response_format` | string | No | `"url"` or `"b64_json"`. Default: `"url"` |
+
+**Example:**
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "Change the landmarks to be New York City landmarks",
+  "image_url": "https://example.com/london.jpg"
+}
+```
+
+---
+
+## Video Generation
 
 ### Start Video Generation
 
@@ -137,6 +211,13 @@ Poll this endpoint to check if your video is ready.
 
 ## Key Constraints
 
+### Images
+- Maximum 10 images per request
+- Image URLs are temporary — download promptly after generation
+- Image editing charges for both input and output images
+- All images subject to content moderation
+
+### Videos
 - Text/image-to-video duration: 1-15 seconds
 - Video editing: max 8.7 seconds input video
 - Video editing output matches source aspect ratio and resolution (capped at 720p)
@@ -151,6 +232,22 @@ The API rejects prompts containing:
 - Violence or gore
 - Illegal activities
 - Copyrighted material
+
+## Image Specifications
+
+### Supported Aspect Ratios
+- 1:1: Square (default)
+- 16:9, 9:16: Landscape/Portrait
+- 4:3, 3:4, 3:2, 2:3: Standard ratios
+- 2:1, 1:2: Wide/Tall
+- 19.5:9, 9:19.5, 20:9, 9:20: Ultra-wide/tall
+- auto: Automatic selection
+
+### Output Formats
+- URL: Temporary download link (default)
+- b64_json: Base64-encoded image data
+
+---
 
 ## Video Specifications
 
