@@ -36,3 +36,10 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Git directory backups
+.git_old/
+
+# Overstory
+.overstory/*.db*
+.overstory/*.json
