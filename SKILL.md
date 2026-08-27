@@ -20,6 +20,13 @@ Quick setup:
 export XAI_API_KEY="your-api-key-here"
 ```
 
+The xAI backend is the default. Use Atlas Cloud only when the user explicitly
+selects it and `ATLASCLOUD_API_KEY` is present.
+
+```bash
+export ATLASCLOUD_API_KEY="your-api-key-here"
+```
+
 ## Capabilities
 
 - **Text-to-image**: Generate images from text descriptions (up to 10 variations)
@@ -29,6 +36,34 @@ export XAI_API_KEY="your-api-key-here"
 - **Video editing**: Modify videos using natural language
 - **Async generation**: Handles long-running video jobs with polling
 - **Auto-delivery**: Downloads and delivers images/videos via chat
+
+## Optional Atlas Cloud Backend
+
+Before using Atlas Cloud, confirm the current Grok Imagine model and its schema
+in the live Atlas Cloud model catalog. Do not guess model IDs or parameters.
+
+```bash
+python3 - << 'EOF'
+import os
+import sys
+sys.path.insert(0, 'scripts')
+from atlas_cloud_grok import AtlasCloudGrokClient
+
+client = AtlasCloudGrokClient(os.environ["ATLASCLOUD_API_KEY"])
+job = client.text_to_video(
+    "A beautiful sunset over the ocean",
+    duration=10,
+    resolution="480p",
+)
+final = client.wait_for_completion(job["request_id"], timeout=600)
+client.download_output(final, "video_output.mp4")
+EOF
+```
+
+Atlas image and video generation are asynchronous. A generation POST must be
+sent exactly once; never retry it after a timeout or ambiguous response. Poll
+only `GET /api/v1/model/prediction/{request_id}` with a bounded timeout. Stop on
+`failed`/`canceled`, and read final media URLs from `outputs`.
 
 ## Workflow
 
@@ -171,6 +206,7 @@ See [README.md](README.md) for complete setup instructions.
 Common errors and responses:
 
 - **Unauthorized / API key not set**: → Get your key from https://console.x.ai/ and set `export XAI_API_KEY="your-key"` - See README.md for details
+- **Atlas key not set**: Use the xAI default, or set `ATLASCLOUD_API_KEY` before explicitly selecting Atlas Cloud
 - **Rate limit**: "Too many requests" → Wait and retry
 - **Content policy**: "Prompt violates content policies" → Rephrase prompt
 - **Timeout**: Job took too long → Reduce duration or complexity
