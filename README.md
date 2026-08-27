@@ -5,6 +5,9 @@
 
 A Python client and [OpenClaw](https://docs.openclaw.ai) skill for generating images and videos using [xAI's Grok Imagine APIs](https://docs.x.ai/developers/model-capabilities).
 
+xAI remains the default backend. An optional Atlas Cloud client is also included
+for the same Grok Imagine workflows when `ATLASCLOUD_API_KEY` is configured.
+
 ## Features
 
 - **Text-to-Image** — Generate images from text (up to 10 variations)
@@ -37,6 +40,34 @@ A Python client and [OpenClaw](https://docs.openclaw.ai) skill for generating im
    ```
 
 ## Usage
+
+### Optional Atlas Cloud backend
+
+Atlas Cloud jobs are asynchronous for both images and videos. Verify the current
+model IDs and input schema in the [Atlas Cloud model catalog](https://www.atlascloud.ai/models)
+before overriding a model, then submit each generation request only once.
+
+```bash
+export ATLASCLOUD_API_KEY="your-key-here"
+```
+
+```python
+import os
+
+from scripts.atlas_cloud_grok import AtlasCloudGrokClient
+
+atlas = AtlasCloudGrokClient(os.environ["ATLASCLOUD_API_KEY"])
+job = atlas.text_to_video(
+    "A golden retriever running through a sunny meadow",
+    duration=10,
+)
+final = atlas.wait_for_completion(job["request_id"])
+atlas.download_output(final, "output.mp4")
+```
+
+The Atlas client supports text-to-image, image editing, text-to-video,
+image-to-video, and video editing. It never retries generation POSTs; only the
+prediction GET is repeated with a bounded timeout.
 
 ### Image Generation
 
@@ -124,7 +155,8 @@ Image and video URLs are **temporary** — download promptly after generation.
 ```
 grok-imagine-video/
 ├── scripts/
-│   └── grok_video_api.py      # Python client library
+│   ├── grok_video_api.py      # Python client library
+│   └── atlas_cloud_grok.py    # Optional Atlas Cloud backend
 ├── references/
 │   └── api_reference.md       # Full API documentation
 ├── SKILL.md                   # OpenClaw skill definition
@@ -137,6 +169,7 @@ grok-imagine-video/
 - Python 3.8+
 - [`requests`](https://pypi.org/project/requests/) library
 - xAI API key ([console.x.ai](https://console.x.ai/))
+- Atlas Cloud API key (optional, for `AtlasCloudGrokClient`)
 - [OpenClaw](https://docs.openclaw.ai) (only for chatbot integration)
 
 ## License
